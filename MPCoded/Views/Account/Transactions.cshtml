@@ -1,0 +1,32 @@
+﻿@using MPCoded.Models.ViewModels
+@model IEnumerable<TransactionViewModel>
+
+@{
+    ViewData["Title"] = "User Transactions";
+}
+
+<h2>User Transactions</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Transaction Id</th>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var transaction in Model)
+        {
+            <tr>
+                <td>@transaction.TransactionId</td>
+                <td>@transaction.Amount.ToString("C")</td>
+                <td>@transaction.TransactionDate.ToString("g")</td>
+                <td>@transaction.Type</td>
+                <td>@transaction.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,31 @@
+﻿@model TransferViewModel
+
+@{
+    ViewData["Title"] = "Transfer";
+}
+
+<h2>Transfer</h2>
+
+<form asp-action="Transfer" method="post">
+    <div class="form-group">
+        <label asp-for="TargetUserName" class="control-label"></label>
+        <input asp-for="TargetUserName" class="form-control" readonly />
+        <span asp-validation-for="TargetUserName" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Amount" class="control-label"></label>
+        <input asp-for="Amount" class="form-control" />
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Transfer</button>
+</form>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
