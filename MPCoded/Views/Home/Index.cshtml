@@ -1,51 +1,53 @@
-﻿@model MPCoded.Models.ViewModels.AccountViewModel
+﻿@model MPCoded.Models.ViewModels.HomeIndexViewModel
 
 @{
     ViewBag.Title = "Welcome";
 }
 
 <h1 class="text-center mt-4">
-    Welcome, @Model.FirstName @Model.LastName
+    Welcome, @Model.Account.FirstName @Model.Account.LastName
 </h1>
 
 <div class="text-center mt-3">
-    <img src="@Model.ProfilePicturePath" alt="Profile Picture" class="rounded-circle" style="width: 150px; height: 150px;" />
+    <img src="@Model.Account.ProfilePicturePath" alt="Profile Picture" class="rounded-circle" style="width: 150px; height: 150px;" />
 </div>
 
 <p class="text-center mt-3" style="font-size: 24px;">
-    Total Balance: @Model.Balance.ToString("C")
+    Total Balance: @Model.Account.Balance.ToString("C")
 </p>
 
-<form asp-action="AddTransaction" asp-controller="Account" method="post" class="mx-auto mt-3 p-4 border rounded shadow" style="max-width: 600px;">
+<form asp-action="AddTransaction" asp-controller="Transaction" method="post" class="mx-auto mt-3 p-4 border rounded shadow" style="max-width: 600px;">
     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
     <h3 class="text-center mb-3">Transactions</h3>
 
     <div class="d-flex justify-content-center mb-3">
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="TransactionType" id="Deposit" value="Deposit">
+            <input class="form-check-input" type="radio" asp-for="Transaction.TransactionType" id="Deposit" value="Deposit">
             <label class="form-check-label" for="Deposit">Deposit</label>
         </div>
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="TransactionType" id="Withdrawal" value="Withdrawal">
+            <input class="form-check-input" type="radio" asp-for="Transaction.TransactionType" id="Withdrawal" value="Withdrawal">
             <label class="form-check-label" for="Withdrawal">Withdrawal</label>
         </div>
     </div>
 
     <div class="form-group">
-        <label for="Amount">Amount</label>
-        <input asp-for="Amount" class="form-control" />
-        <span asp-validation-for="Amount" class="text-danger"></span>
+        <label asp-for="Transaction.Amount">Amount</label>
+        <input asp-for="Transaction.Amount" class="form-control" />
+        <span asp-validation-for="Transaction.Amount" class="text-danger"></span>
     </div>
+
     <div class="form-group mt-3">
-        <label for="Description">Description</label>
-        <input asp-for="Description" class="form-control" />
-        <span asp-validation-for="Description" class="text-danger"></span>
+        <label asp-for="Transaction.Description">Description</label>
+        <input asp-for="Transaction.Description" class="form-control" />
+        <span asp-validation-for="Transaction.Description" class="text-danger"></span>
     </div>
+
     <button type="submit" class="btn btn-primary mt-4 w-100">Submit</button>
 </form>
 
-<a asp-action="AccountDetails" asp-controller="Account" class="btn btn-primary btn-lg mt-4 d-block mx-auto" style="max-width: 200px;">Details</a>
+<a asp-action="AccountDetails" asp-controller="Home" class="btn btn-primary btn-lg mt-4 d-block mx-auto" style="max-width: 200px;">Details</a>
 
 <style>
     .styled-table {
@@ -85,7 +87,3 @@
         text-align: center;
     }
 </style>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}

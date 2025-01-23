@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using MPCoded.Models.ViewModels;
 
 namespace MPCoded.Models
 {
-    public class Transaction
+    public class Transaction 
     {
         [Key]
         public int TransactionId { get; set; }

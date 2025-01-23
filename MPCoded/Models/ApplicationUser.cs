@@ -11,7 +11,7 @@ namespace MPCoded.Models
         public Genders Gender { get; set; }
         public enum Genders { Male, Female }
 
-        public decimal Balance { get; set; } = 0m; // Default to 0
+        public decimal Balance { get; set; }  
 
         // Property for account number as an integer
         [Required]

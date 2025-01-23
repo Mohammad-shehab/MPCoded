@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MPCoded.Data;
 using MPCoded.Models;
 using MPCoded.Models.ViewModels;
 
@@ -17,6 +19,7 @@ namespace MPCoded.Controllers
         {
             userManager = _usermanager;
             signinManager = _signinManager;
+
         }
         #endregion
 
@@ -25,7 +28,7 @@ namespace MPCoded.Controllers
         public IActionResult Index()
         {
 
-                
+
             return View();
         }
         [AllowAnonymous]
@@ -158,223 +161,18 @@ namespace MPCoded.Controllers
             await signinManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }
-        #endregion
-
-
 
         public IActionResult AccessDenied()
         {
             return View();
         }
 
-        [Authorize]
-        public async Task<IActionResult> AccountDetails()
-        {
-            var user = await userManager.GetUserAsync(User);
-
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var model = new AccountDetailsViewModel
-            {
-                Email = user.Email,
-                Username = user.UserName,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                DateOfBirth = user.DateOfBirth,
-                Gender = user.Gender.ToString(),
-                CivilID = user.CivilID,
-                Balance = user.Balance,
-                AccountNumber = user.AccountNumber,
-                ProfilePicturePath = user.ProfilePicturePath
-            };
-
-            return View(model);
-        }
+        #endregion
 
 
 
 
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> AddTransaction(TransactionViewModel model)
-        {
-            var user = await userManager.GetUserAsync(User);
-
-            if (!ModelState.IsValid)
-            {
-                var accountViewModel = new AccountViewModel
-                {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Balance = user.Balance,
-                    ProfilePicturePath = user.ProfilePicturePath
-                };
-
-                return View("Index", accountViewModel);
-            }
-
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            Transaction.TransactionType type = (Transaction.TransactionType)Enum.Parse(typeof(Transaction.TransactionType), model.TransactionType);
-
-            if (type == Transaction.TransactionType.Withdrawal && user.Balance < model.Amount)
-            {
-                ModelState.AddModelError("", "Insufficient balance");
-                return View("Index", new AccountViewModel
-                {
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Balance = user.Balance,
-                    ProfilePicturePath = user.ProfilePicturePath
-                });
-            }
-
-            var transaction = new Transaction
-            {
-                Amount = model.Amount,
-                TransactionDate = DateTime.Now,
-                Type = type,
-                Description = string.IsNullOrWhiteSpace(model.Description) ? "No description provided" : model.Description, // Ensure non-null description
-                ApplicationUserId = user.Id
-            };
-
-            user.Transactions.Add(transaction);
-            user.Balance += (type == Transaction.TransactionType.Deposit) ? model.Amount : -model.Amount;
-            await userManager.UpdateAsync(user);
-
-            return RedirectToAction("Index", "Home");
-        }
-
-        [Authorize]
-        public async Task<IActionResult> AllUsers()
-        {
-            var currentUser = await userManager.GetUserAsync(User);
-
-            var users = userManager.Users
-                .Where(user => user.Id != currentUser.Id)
-                .Select(user => new UserCardViewModel
-                {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Balance = user.Balance,
-                    ProfilePicturePath = user.ProfilePicturePath
-                }).ToList();
-
-            return View(users);
-        }
-
-
-
-        [Authorize]
-        public async Task<IActionResult> Transfer(string id)
-        {
-            var targetUser = await userManager.FindByIdAsync(id);
-            if (targetUser == null)
-            {
-                return NotFound();
-            }
-
-            var model = new TransferViewModel
-            {
-                TargetUserId = targetUser.Id,
-                TargetUserName = $"{targetUser.FirstName} {targetUser.LastName}"
-            };
-
-            return View(model);
-        }
-
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> Transfer(TransferViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = await userManager.GetUserAsync(User);
-                var targetUser = await userManager.FindByIdAsync(model.TargetUserId);
-
-                if (user == null || targetUser == null)
-                {
-                    return NotFound();
-                }
-
-                if (user.Balance < model.Amount)
-                {
-                    ModelState.AddModelError("", "Insufficient balance");
-                    return View(model);
-                }
-
-                // Deduct from sender and add to recipient
-                user.Balance -= model.Amount;
-                targetUser.Balance += model.Amount;
-
-                // Create transaction for sender
-                var senderTransaction = new Transaction
-                {
-                    Amount = model.Amount,
-                    TransactionDate = DateTime.Now,
-                    Type = Transaction.TransactionType.Transfer,
-                    Description = $"Transfer to {targetUser.FirstName} {targetUser.LastName}",
-                    ApplicationUserId = user.Id
-                };
-
-                // Create transaction for recipient
-                var recipientTransaction = new Transaction
-                {
-                    Amount = model.Amount,
-                    TransactionDate = DateTime.Now,
-                    Type = Transaction.TransactionType.Transfer,
-                    Description = $"Transfer from {user.FirstName} {user.LastName}",
-                    ApplicationUserId = targetUser.Id
-                };
-
-                user.Transactions.Add(senderTransaction);
-                targetUser.Transactions.Add(recipientTransaction);
-
-                // Update both users in the database
-                await userManager.UpdateAsync(user);
-                await userManager.UpdateAsync(targetUser);
-
-                // Redirect to home page after transfer
-                return RedirectToAction("Index", "Home");
-            }
-
-            // If the model is not valid, redisplay the form with validation errors
-            return View(model);
-        }
-
-
-
-
-
-        [Authorize]
-        public async Task<IActionResult> Transactions()
-        {
-            var user = await userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
-            var transactions = user.Transactions.Select(t => new TransactionViewModel
-            {
-                TransactionId = t.TransactionId,
-                Amount = t.Amount,
-                TransactionDate = t.TransactionDate,
-                Type = t.Type.ToString(),
-                Description = t.Description
-            }).ToList();
-
-            return View(transactions);
-        }
+       
 
 
 
@@ -382,3 +180,6 @@ namespace MPCoded.Controllers
 
     }
 }
+
+
+    

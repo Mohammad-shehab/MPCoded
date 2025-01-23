@@ -1,4 +1,6 @@
-﻿namespace MPCoded.Models.ViewModels
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MPCoded.Models.ViewModels
 {
     public class UserCardViewModel
     {

@@ -1,5 +1,5 @@
-﻿@using MPCoded.Models.ViewModels
-@model IEnumerable<TransactionViewModel>
+﻿﻿@using MPCoded.Models.ViewModels
+@model IEnumerable<Transaction>
 
 @{
     ViewData["Title"] = "User Transactions";
@@ -10,7 +10,6 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Transaction Id</th>
             <th>Amount</th>
             <th>Date</th>
             <th>Type</th>
@@ -21,12 +20,12 @@
         @foreach (var transaction in Model)
         {
             <tr>
-
                 <td>@transaction.Amount.ToString("C")</td>
                 <td>@transaction.TransactionDate.ToString("g")</td>
-                <td>@transaction.TransactionType</td>
+                <td>@transaction.Type</td>
                 <td>@transaction.Description</td>
             </tr>
         }
     </tbody>
 </table>
+

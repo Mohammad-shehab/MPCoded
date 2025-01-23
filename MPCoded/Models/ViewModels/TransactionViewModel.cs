@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MPCoded.Models.ViewModels
 {
-    public class TransactionViewModel
+    public class TransactionViewModel : AccountViewModel
     {
         [Required]
         public string TransactionType { get; set; }
@@ -13,11 +14,14 @@ namespace MPCoded.Models.ViewModels
 
         [Required(ErrorMessage = "Description is required.")]
         public string Description { get; set; }
-            public int TransactionId { get; set; }
-            public DateTime TransactionDate { get; set; }
-            public string Type { get; set; }
-        }
 
+        public DateTime TransactionDate { get; set; }
 
+        [Required]
+        public string ApplicationUserId { get; set; }
+
+        [ForeignKey("ApplicationUserId")]
+        public ApplicationUser ApplicationUser { get; set; }
     }
+}
 

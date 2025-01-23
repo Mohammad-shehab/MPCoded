@@ -6,17 +6,35 @@ using MPCoded.Models;
 
 
 namespace MPCoded.Data
+{
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+
+
+
+
+        public DbSet<Transaction> Transactions { get; set; }
+
+
+
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+            base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.Property(e => e.Balance)
+                    .HasColumnType("decimal(18, 2)");
+            });
 
-
-
-            public DbSet<Transaction> Transactions { get; set; }
-
-
+            modelBuilder.Entity<Transaction>(entity =>
+            {
+                entity.Property(e => e.Amount)
+                    .HasColumnType("decimal(18, 2)");
+            });
         }
     }
 
+}
