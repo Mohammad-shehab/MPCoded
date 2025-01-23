@@ -22,8 +22,9 @@ namespace MPCoded.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> TransactionsList()
+
+
+        public async Task<IActionResult> TransactionsList(decimal? minAmount, decimal? maxAmount, DateTime? startDate, DateTime? endDate)
         {
             var user = await userManager.GetUserAsync(User);
 
@@ -32,13 +33,40 @@ namespace MPCoded.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var transactions = await _context.Transactions
+            var transactionsQuery = _context.Transactions
                 .Where(t => t.ApplicationUserId == user.Id)
+                .AsQueryable();
+
+            if (minAmount.HasValue)
+            {
+                transactionsQuery = transactionsQuery.Where(t => t.Amount >= minAmount.Value);
+            }
+
+            if (maxAmount.HasValue)
+            {
+                transactionsQuery = transactionsQuery.Where(t => t.Amount <= maxAmount.Value);
+            }
+
+            if (startDate.HasValue)
+            {
+                transactionsQuery = transactionsQuery.Where(t => t.TransactionDate >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                transactionsQuery = transactionsQuery.Where(t => t.TransactionDate <= endDate.Value);
+            }
+
+           
+
+            var transactions = await transactionsQuery
                 .OrderByDescending(t => t.TransactionDate)
                 .ToListAsync();
 
             return View(transactions);
         }
+
+     
 
         [HttpPost]
         public async Task<IActionResult> AddTransaction(HomeIndexViewModel model)
